@@ -6,7 +6,7 @@ import React from 'react'
 const Navbar = () => {
     const { userId } = auth();
     return (
-        <div className='bg-cyan-950 rounded-b-xl'>
+        <div className='#624cf5 rounded-b-xl'>
             <ul className="flex justify-between py-4 px-8">
                 <div>
                     <Link href="/">
