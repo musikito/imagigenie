@@ -10,6 +10,7 @@ import { dark } from "@clerk/themes";
 import Navbar from "@/components/Navbar";
 import { cn } from "@/lib/utils";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
 
 
 const IBMPlex = IBM_Plex_Sans({ 
@@ -44,7 +45,7 @@ export default function RootLayout({
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col h-screen">
                 <Navbar />
-                {/* <Sidebar /> */}
+                <MobileNav />
               {children}
             </div>
           </div>

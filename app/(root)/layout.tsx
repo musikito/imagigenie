@@ -1,3 +1,4 @@
+import MobileNav from "@/components/MobileNav";
 import Sidebar from "@/components/Sidebar";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
