@@ -1,7 +1,6 @@
 import { UserButton } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import Link from 'next/link'
-import React from 'react'
 
 const Navbar = () => {
     const { userId } = auth();
@@ -38,8 +37,9 @@ const Navbar = () => {
                                 <li>Profile</li>
                             </Link>
 
-                            <li className='flex items-center'>
-                                <UserButton />
+                            {/* <li className='flex items-center'> */}
+                            <li className='flex-center cursor-pointer gap-2 p-4'> 
+                                <UserButton showName />
                             </li>
                         </>
 

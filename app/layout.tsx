@@ -9,6 +9,7 @@ import {
 import { dark } from "@clerk/themes";
 import Navbar from "@/components/Navbar";
 import { cn } from "@/lib/utils";
+import Sidebar from "@/components/Sidebar";
 
 
 const IBMPlex = IBM_Plex_Sans({ 
@@ -29,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     // <ClerkProvider appearance={{baseTheme: dark}}>
-    <ClerkProvider appearance={
+    <ClerkProvider afterSignOutUrl={"/"} appearance={
       {
         variables: { colorPrimary:"#624cf5"}
       }
@@ -43,6 +44,7 @@ export default function RootLayout({
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col h-screen">
                 <Navbar />
+                {/* <Sidebar /> */}
               {children}
             </div>
           </div>
