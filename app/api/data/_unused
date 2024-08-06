@@ -1,0 +1,23 @@
+ {type === "fill" && (
+          <CustomField
+            name="aspectRatio"
+            control={form.control}
+            formLabel="Aspect Ratio"
+            className="w-full"
+            render={({ field }) => (
+              <Select>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Theme" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">Light</SelectItem>
+                  <SelectItem value="dark">Dark</SelectItem>
+                  <SelectItem value="system">System</SelectItem>
+                </SelectContent>
+              </Select>
+
+
+            )}
+
+          />
+        )}; // End of CustomField type

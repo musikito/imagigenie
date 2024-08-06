@@ -38,9 +38,9 @@ export default function RootLayout({
     }>
       <html lang="en">
         <body className={cn("font-IBMPlex antialiased", IBMPlex.variable)}>
-          <ClerkLoading>
+          {/* <ClerkLoading>
             <div className="flex items-center justify-center h-screen text-2xl">LOADING...</div>
-          </ClerkLoading>
+          </ClerkLoading> */}
           <ClerkLoaded>
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col h-screen">
