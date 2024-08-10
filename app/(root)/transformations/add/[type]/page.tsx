@@ -5,7 +5,7 @@ import { getUserById } from '@/lib/actions/user.action';
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 
-const AddTransformationTypePage = async ({params: {type}}: SearchParamProps) => {
+const AddTransformationTypePage = async ({ params: { type } }: SearchParamProps) => {
   const { userId } = auth();
   const transformation = transformationTypes[type];
 
@@ -14,21 +14,24 @@ const AddTransformationTypePage = async ({params: {type}}: SearchParamProps) => 
    * If the user is not authenticated, redirects to the sign-in page.
    * @returns {Promise<User>} The user's information.
    */
-  if (!userId)  redirect('/sign-in');
+  if (!userId) redirect('/sign-in');
   const user = await getUserById(userId);
 
   return (
     <>
-      <Header 
-        title={transformation.title} 
+      <Header
+        title={transformation.title}
         subtitle={transformation.subTitle}
       />
-      <TransformationForm 
-        action="Add"
-        userId={user?._id}
-        type={transformation.type as TransformationTypeKey}
-        creditBalance={user.creditBalance}
-      />
+      <section className='mt-10'>
+
+        <TransformationForm
+          action="Add"
+          userId={user?._id}
+          type={transformation.type as TransformationTypeKey}
+          creditBalance={user.creditBalance}
+        />
+      </section>
     </>
   );
 };
