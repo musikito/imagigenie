@@ -117,7 +117,7 @@ const MediaUploader = (
                                     alt="uploaded image"
                                     sizes={"(max-width: 768px) 100vw, 50vw"}
                                     placeholder={ dataUrl as PlaceholderValue}
-                                    className="media-uploader+cldImage"
+                                    className="media-uploader_cldImage"
                                     />
                                 </div>
                             </>

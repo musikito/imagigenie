@@ -22,6 +22,7 @@ import { AspectRatioKey, debounce, deepMergeObjects } from "@/lib/utils";
 import { set } from "mongoose";
 import { updateCredits } from "@/lib/actions/user.action";
 import MediaUploader from "./MediaUploader";
+import TransformedImage from "./TransformedImage";
 
 /**
  * A Zod schema that defines the shape of the form data for the TransformationForm component.
@@ -156,7 +157,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
     );// End of setTransformationConfig
     setNewTransformation(null);
     startTransition(async () => {
-      // await updateCredits(userId, creditFee);
+      await updateCredits(userId, creditFee);
 
     })
 
@@ -250,8 +251,21 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
               />
             )}
           </div>
-        )} {/* End of type === "remove" || type === "recolor" */}
+        )} {/* End of recolor */}
 
+        {/**
+         * Renders a media uploader field and a transformed image preview for the TransformationForm component.
+         * 
+         * The media uploader field allows the user to upload an image, which is then stored in the `image` state.
+         * The transformed image preview displays the uploaded image with the specified transformation configuration.
+         * 
+         * @param form - The form object from the react-hook-form library, used to control the form state.
+         * @param setImage - A function to update the `image` state.
+         * @param transformationConfig - The current transformation configuration.
+         * @param type - The type of transformation being performed (e.g. "fill", "remove", "recolor").
+         * @param isTransforming - A boolean indicating whether the image is currently being transformed.
+         * @param setIsTransforming - A function to update the `isTransforming` state.
+         */}
         <div className="media-uploader-filed">
           <CustomField
             name="publicId"
@@ -266,6 +280,28 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
                 type={type}
               />
             )}
+          />
+           {/* Transformed Image */}
+          {/**
+           * Renders a transformed image preview for the TransformationForm component.
+           * 
+           * The transformed image preview displays the uploaded image with the specified transformation configuration.
+           * 
+           * @param image - The uploaded image to be transformed.
+           * @param transformationConfig - The current transformation configuration.
+           * @param type - The type of transformation being performed (e.g. "fill", "remove", "recolor").
+           * @param title - The title of the transformed image.
+           * @param isTransforming - A boolean indicating whether the image is currently being transformed.
+           * @param setIsTransforming - A function to update the `isTransforming` state.
+           */}
+          <TransformedImage
+            image={image}
+            transformationConfig={transformationConfig}
+            type={type}
+            title={form.getValues().title}
+            isTransforming={isTransforming}
+            setIsTransforming={setIsTransforming}
+
           />
 
         </div>
@@ -288,7 +324,6 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
           >{isSubmitting ? "Submitting..." : "Save Image"}
           </Button>
         </div>
-
 
 
       </form>
