@@ -21,6 +21,7 @@ import { startTransition, useState, useTransition } from "react";
 import { AspectRatioKey, debounce, deepMergeObjects } from "@/lib/utils";
 import { set } from "mongoose";
 import { updateCredits } from "@/lib/actions/user.action";
+import MediaUploader from "./MediaUploader";
 
 /**
  * A Zod schema that defines the shape of the form data for the TransformationForm component.
@@ -48,7 +49,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTransforming, setIsTransforming] = useState(false);
   const [transformationConfig, setTransformationConfig] = useState(config);
-  const [ isPending, setTransition] = useTransition();
+  const [isPending, setTransition] = useTransition();
 
 
 
@@ -154,7 +155,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
       )
     );// End of setTransformationConfig
     setNewTransformation(null);
-    startTransition(async () =>{
+    startTransition(async () => {
       // await updateCredits(userId, creditFee);
 
     })
@@ -250,6 +251,24 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
             )}
           </div>
         )} {/* End of type === "remove" || type === "recolor" */}
+
+        <div className="media-uploader-filed">
+          <CustomField
+            name="publicId"
+            control={form.control}
+            className="flex size-full flex-col"
+            render={({ field }) => (
+              <MediaUploader
+                onValueChange={field.onChange}
+                setImage={setImage}
+                publicId={field.value}
+                image={image}
+                type={type}
+              />
+            )}
+          />
+
+        </div>
 
         <div className="flex flex-col gap-4">
           <Button
