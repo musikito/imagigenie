@@ -1,3 +1,20 @@
+/**
+ * The `TransformationForm` component is a React component that renders a form for creating or updating image transformations.
+ * 
+ * The component uses the `react-hook-form` library to manage the form state and validation, and the `zod` library to define the schema for the form data.
+ * 
+ * The component supports three types of transformations: "fill", "remove", and "recolor". The form fields and functionality vary depending on the transformation type.
+ * 
+ * The component provides the following functionality:
+ * - Allows the user to upload an image and preview the transformed image
+ * - Allows the user to select an aspect ratio for the "fill" transformation type
+ * - Allows the user to enter a prompt for the "remove" and "recolor" transformation types
+ * - Allows the user to enter a color for the "recolor" transformation type
+ * - Provides a "Transform" button to apply the transformation to the image
+ * - Provides a "Save Image" button to save the transformed image
+ * 
+ * The component also handles the submission of the form, updating the user's credits, and navigating to the transformed image page.
+ */
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,12 +34,17 @@ import {
 import { Input } from "@/components/ui/input";
 import { aspectRatioOptions, creditFee, defaultValues, transformationTypes } from "@/constants";
 import { CustomField } from "./CustomField";
-import { startTransition, useState, useTransition } from "react";
+import { startTransition, useEffect, useState, useTransition } from "react";
 import { AspectRatioKey, debounce, deepMergeObjects } from "@/lib/utils";
-import { set } from "mongoose";
 import { updateCredits } from "@/lib/actions/user.action";
 import MediaUploader from "./MediaUploader";
 import TransformedImage from "./TransformedImage";
+import { getCldImageUrl } from "next-cloudinary";
+import { title } from "process";
+import { addImage, updateImage } from "@/lib/actions/image.actions";
+import { useRouter } from "next/navigation";
+import { InsufficientCreditsModal } from "./InsufficientCreditsModal";
+
 
 /**
  * A Zod schema that defines the shape of the form data for the TransformationForm component.
@@ -51,6 +73,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
   const [isTransforming, setIsTransforming] = useState(false);
   const [transformationConfig, setTransformationConfig] = useState(config);
   const [isPending, setTransition] = useTransition();
+  const router = useRouter();
 
 
 
@@ -85,8 +108,79 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
 
 
   /** Functions block */
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // console.log(values);
+    setIsSubmitting(true);
+    if (data || image) {
+      const transformationUrl = getCldImageUrl({
+        width: image?.width,
+        height: image?.height,
+        src: image?.publicId,
+        ...transformationConfig,
+      }); // End of transformationUrl
+
+      const imageData = {
+        title: values.title,
+        publicId: image?.publicId,
+        transformationType: type,
+        width: image?.width,
+        height: image?.height,
+        config: transformationConfig,
+        secureURL: image?.secureURL,
+        transformationURL: transformationUrl,
+        aspectRatio: values.aspectRatio,
+        color: values.color,
+        prompt: values.prompt,
+      }; // End of imageData
+
+      if (action === 'Add') {
+        try {
+          const newImage = await addImage({
+            image: imageData,
+            userId,
+            path: "/",
+          });
+
+          if (newImage) {
+            form.reset();
+            setImage(data);
+            router.push(`/transformations/${newImage._id}`);
+            // setNewTransformation(null);
+            // setIsSubmitting(false);
+          }; // End of if newImage statement
+
+        } catch (error) {
+          console.log(error);
+
+        }
+      }; // End of if action statement
+
+      if (action === "Update") {
+        try {
+          const updatedImage = await updateImage({
+            image: {
+              ...imageData,
+              _id: data?._id,
+            },
+            userId,
+            path: `/transformations/${data?._id}`,
+          });
+
+          if (updatedImage) {
+            router.push(`/transformations/${updatedImage._id}`);
+          }; // End of if newImage statement
+
+        } catch (error) {
+          console.log(error);
+
+        }
+      }; // End of if Update statement
+
+    };// End if Data statement
+
+    setIsSubmitting(false);
   }; // End of onSubmit
 
   /**
@@ -109,32 +203,36 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
       height: imageSize.height,
 
     })); // End of setImage
+
+    setNewTransformation(transformationType.config);
+
+    return onChangeField(value);
   }; // End of onSelectFieldHandler
 
   /**
-   * Debounces the input change event and updates the `newTransformation` state with the new field value.
+   * Handles the input change event for a form field.
    *
-   * @param fieldName - The name of the field that was changed.
-   * @param value - The new value of the field.
-   * @param type - The type of the field (e.g. "prompt" or "to").
+   * This function is used to update the `newTransformation` state with the latest value entered in a form field. It uses the `debounce` function to delay the update by 1 second, which helps to reduce the number of state updates and improve performance.
+   *
+   * @param fieldName - The name of the form field that was updated.
+   * @param value - The new value entered in the form field.
+   * @param type - The type of transformation (e.g. "fill", "resize") that the form field belongs to.
    * @param onChangeField - A callback function to update the form field value.
    *
-   * This function uses the `debounce` utility to delay the update of the `newTransformation` state by 1 second.
-   * This helps to prevent excessive updates and improve performance when the user is typing quickly.
-   * The function then updates the `newTransformation` state with the new field value and calls the `onChangeField`
-   * callback to update the corresponding form field.
+   * @returns The result of calling the `onChangeField` callback with the new value.
    */
   const onInputChangeHandler = (fieldName: string, value: string, type: string, onChangeField: (value: string) => void) => {
     debounce(() => {
       setNewTransformation((prevState: any) => ({
         ...prevState,
         [type]: {
-          ...prevState[type],
-          [fieldName === "prompt" ? "prompt" : "to"]: value,
+          ...prevState?.[type],
+          [fieldName === 'prompt' ? 'prompt' : 'to']: value
         }
-      }));
-      return onChangeField(value);
-    }, 1000);
+      }))
+    }, 1000)();
+
+    return onChangeField(value)
   }; // End of onInputChangeHandler
 
 
@@ -165,12 +263,17 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
 
 
 
-
+useEffect(()=>{
+  if( image &&( type === "restore" || type === "removeBackground")){
+    setNewTransformation(transformationType.config);
+  }
+},[image,transformationType.config,type]); // End of useEffect
 
   return (
 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        { creditBalance < Math.abs(creditFee) && <InsufficientCreditsModal />}
 
         <CustomField
           name="title"
@@ -281,7 +384,7 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
               />
             )}
           />
-           {/* Transformed Image */}
+          {/* Transformed Image */}
           {/**
            * Renders a transformed image preview for the TransformationForm component.
            * 
