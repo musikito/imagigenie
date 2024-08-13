@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 import { handleError } from "@/lib/utils";
 import Image from "../database/models/image.model";
 import { redirect } from "next/navigation";
-
+import { v2 as cloudinary } from "cloudinary";
 
 
 /**
@@ -15,7 +15,7 @@ import { redirect } from "next/navigation";
  * @param {any} query - The query to populate the `author` field for.
  * @returns {any} - The query with the `author` field populated.
  */
-const populateUser = ( query:any) =>query.populate({
+const populateUser = (query: any) => query.populate({
     path: "author",
     model: User,
     select: " _id firstName lastName",
@@ -85,7 +85,7 @@ export async function updateImage({ image, userId, path }: UpdateImageParams) {
 export async function deleteImage(imageId: string) {
     try {
         await connect();
-       await Image.findByIdAndDelete(imageId);
+        await Image.findByIdAndDelete(imageId);
     } catch (error) {
         handleError(error);
     } finally {
@@ -115,3 +115,66 @@ export async function getImageById(imageId: string) {
 }; // End of getImageById
 
 
+// GET ALL IMAGES
+
+/**
+ * Retrieves a paginated list of images from the database, optionally filtered by a search query.
+ *
+ * @param {object} [options] - The options for retrieving the images.
+ * @param {number} [options.page=1] - The page number to retrieve.
+ * @param {number} [options.limit=10] - The number of images to retrieve per page.
+ * @param {string} [options.searchQuery=''] - The search query to filter the images by.
+ * @returns {Promise<{ data: Image[], totalPage: number, savedImages: number }>} - The paginated list of images, the total number of pages, and the total number of saved images.
+ * @throws {Error} - If an error occurs while retrieving the images.
+ */
+export async function getAllImages({ page = 1, limit = 10, searchQuery = "" }: {
+    page: number;
+    limit?: number;
+    searchQuery?: string;
+}) {
+    try {
+        await connect();
+
+        cloudinary.config({
+            cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET,
+            secure: true,
+        }); // End of cloudinary config
+
+        let expression = "folder=imagigenie/";
+        if (searchQuery) {
+            expression += `search=${searchQuery}&`;
+        } // End if
+
+        const { resources } = await cloudinary.search.expression(expression).execute();
+        const resourceIds = resources.map((resource: any) => resource.public_id);
+        let query = {};
+
+        if (searchQuery) {
+            query = {
+                publicId: {
+                    $in: resourceIds,
+                }
+            }
+        } // End if
+
+        const skipAmount = (Number(page - 1)) * limit;
+        const images = await populateUser(Image.find(query))
+            .sort({ createdAt: -1 })
+            .skip(skipAmount)
+            .limit(limit);
+        
+        const totalImages = await Image.find(query).countDocuments();
+        const savedImages = await Image.find().countDocuments();
+        
+        return {
+            data: JSON.parse(JSON.stringify(images)),
+            totalPage: Math.ceil(totalImages / limit),
+            savedImages
+        };
+
+    } catch (error) {
+        handleError(error);
+    }
+}; // End of getAllImages
