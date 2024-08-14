@@ -263,17 +263,17 @@ const TransformationForm = ({ action, data = null, userId, type, creditBalance, 
 
 
 
-useEffect(()=>{
-  if( image &&( type === "restore" || type === "removeBackground")){
-    setNewTransformation(transformationType.config);
-  }
-},[image,transformationType.config,type]); // End of useEffect
+  useEffect(() => {
+    if (image && (type === "restore" || type === "removeBackground")) {
+      setNewTransformation(transformationType.config);
+    }
+  }, [image, transformationType.config, type]); // End of useEffect
 
   return (
 
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        { creditBalance < Math.abs(creditFee) && <InsufficientCreditsModal />}
+        {creditBalance < Math.abs(creditFee) && <InsufficientCreditsModal />}
 
         <CustomField
           name="title"
@@ -292,6 +292,7 @@ useEffect(()=>{
             render={({ field }) => (
               <Select
                 onValueChange={(value) => onSelectFieldHandler(value, field.onChange)}
+                value={field.value}
               >
                 <SelectTrigger className="select-field">
                   <SelectValue placeholder="Select Size" />
@@ -317,7 +318,7 @@ useEffect(()=>{
               name="prompt"
               formLabel={type === "remove" ? "Object to remove" : "Object to recolor"}
               className="w-full"
-              render={(({ field }) => (
+              render={({ field }) => (
                 <Input
                   value={field.value}
                   className="input-field"
@@ -329,7 +330,7 @@ useEffect(()=>{
                       field.onChange,)
                   }
                 />
-              ))}
+              )}
             />
             {type === "recolor" && (
               <CustomField
