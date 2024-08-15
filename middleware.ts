@@ -4,6 +4,11 @@ const isProtectedRoute = createRouteMatcher([
   '/client',
   
 ]);
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/api/webhooks/clerk',
+  '/api/webhooks/stripe'
+]);
 
 /**
  * Middleware function that protects routes that are marked as protected.
@@ -20,6 +25,7 @@ export default clerkMiddleware((auth, req)=>{
   if (isProtectedRoute(req)){
     auth().protect();
   }
+
 });
 
 export const config = {
