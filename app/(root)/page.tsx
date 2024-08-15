@@ -47,7 +47,7 @@ const Home = async ({ searchParams }: SearchParamProps) => {
       />
     </section>
     </>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;
